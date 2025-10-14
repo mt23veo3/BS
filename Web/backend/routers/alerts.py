@@ -1,10 +1,29 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
+from services.alerts_service import (
+    get_all_alerts,
+    get_unread_alerts,
+    mark_alert_as_read,
+)
 
 router = APIRouter()
 
 @router.get("/")
-async def get_alerts():
-    return [
-        {"level": "warn", "msg": "Giữ lệnh BTC/USDT quá lâu", "time": "2025-10-12 13:10:00"},
-        {"level": "info", "msg": "Đã promote lên full lệnh ETH/USDT", "time": "2025-10-12 12:30:00"}
-    ]
+def all_alerts(page: int = Query(1, ge=1), page_size: int = Query(50, ge=1, le=200)):
+    """
+    Lấy toàn bộ lịch sử cảnh báo (có phân trang).
+    """
+    return get_all_alerts(page, page_size)
+
+@router.get("/unread")
+def unread_alerts():
+    """
+    Lấy danh sách cảnh báo chưa đọc.
+    """
+    return get_unread_alerts()
+
+@router.post("/read/{alert_id}")
+def read_alert(alert_id: str):
+    """
+    Đánh dấu cảnh báo đã đọc.
+    """
+    return mark_alert_as_read(alert_id)

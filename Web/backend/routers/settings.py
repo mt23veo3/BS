@@ -1,16 +1,29 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Body
+from services.settings_service import (
+    get_settings,
+    update_settings,
+    get_setting_by_key,
+)
 
 router = APIRouter()
 
 @router.get("/")
-async def get_settings():
-    return {
-        "max_hold_m15": 12,
-        "trailing_stop": 0.002,
-        "snapshot_confirmations": 1
-    }
+def all_settings():
+    """
+    Lấy toàn bộ cấu hình hệ thống.
+    """
+    return get_settings()
 
-@router.post("/")
-async def update_settings(settings: dict):
-    # TODO: lưu settings mới vào DB/file
-    return {"success": True, "msg": "Lưu cài đặt thành công!"}
+@router.get("/{key}")
+def setting_by_key(key: str):
+    """
+    Lấy cấu hình theo key.
+    """
+    return get_setting_by_key(key)
+
+@router.post("/update")
+def update_config(payload: dict = Body(...)):
+    """
+    Cập nhật cấu hình (toàn phần hoặc một phần).
+    """
+    return update_settings(payload)

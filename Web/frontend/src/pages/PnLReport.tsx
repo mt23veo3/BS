@@ -1,22 +1,25 @@
-import { List, Tag } from 'antd';
+import React, { useEffect, useState } from "react";
+import { Card, Alert } from "antd";
+import { getPnLReport, PnLData } from "../api/pnl";
 
-const notifications = [
-  { level: 'info', msg: 'Đã vào lệnh BTC/USDT', time: '13:10' },
-  { level: 'warn', msg: 'Giữ lệnh quá lâu', time: '12:50' },
-];
+export default function PnLReport() {
+  const [data, setData] = useState<PnLData | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-export default function NotificationBar() {
+  useEffect(() => {
+    getPnLReport().then(setData).catch(e => setError(e.message));
+  }, []);
+
+  if (error) return <Alert type="error" message={error} />;
+  if (!data) return <div>Đang tải dữ liệu...</div>;
+
   return (
-    <List
-      size="small"
-      header={<strong>Thông báo mới nhất</strong>}
-      dataSource={notifications}
-      renderItem={item => (
-        <List.Item>
-          <Tag color={item.level === 'warn' ? 'red' : 'blue'}>{item.level.toUpperCase()}</Tag>
-          {item.msg} <span style={{ float: 'right', color: '#bbb' }}>{item.time}</span>
-        </List.Item>
-      )}
-    />
+    <Card title="Lợi nhuận theo ngày">
+      <ul>
+        {data.labels.map((label, i) => (
+          <li key={label}>{label}: {data.values[i]}</li>
+        ))}
+      </ul>
+    </Card>
   );
 }
